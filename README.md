@@ -59,7 +59,7 @@ Use this for active development: edit the module repo, commit, and push; pull ch
 Add a GitHub Release zip URL to `OMEKA_S_MODULES` in `.env`:
 
 ```env
-OMEKA_S_MODULES="Common Contribute … https://github.com/YOUR_USER/InternetArchiveOutboundSync/releases/download/v1.0.0/InternetArchiveOutboundSync.zip"
+OMEKA_S_MODULES="Common Contribute … https://github.com/c-host/InternetArchiveOutboundSync/releases/download/v1.0.0/InternetArchiveOutboundSync.zip"
 ```
 
 On container start, Ghent Docker downloads the zip into `data/omeka/modules/` if that folder does not already exist. To upgrade, remove the module directory, bump the URL, restart the container, then **Admin → Modules → Upgrade**.
