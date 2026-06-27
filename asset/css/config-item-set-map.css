@@ -1,0 +1,40 @@
+.ia-outbound-item-set-map {
+    margin-bottom: 1rem;
+}
+
+.ia-outbound-item-set-map table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0.75rem;
+}
+
+.ia-outbound-item-set-map th,
+.ia-outbound-item-set-map td {
+    padding: 0.5rem 0.65rem;
+    border: 1px solid #d8dde3;
+    text-align: left;
+    vertical-align: middle;
+}
+
+.ia-outbound-item-set-map th {
+    background: #f4f6f8;
+    font-weight: 600;
+}
+
+.ia-outbound-item-set-map select,
+.ia-outbound-item-set-map input[type="text"] {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+.ia-outbound-item-set-map .ia-outbound-map-remove {
+    margin: 0;
+    white-space: nowrap;
+}
+
+.ia-outbound-item-set-map-empty {
+    margin: 0 0 0.75rem;
+    color: #666;
+    font-style: italic;
+}

@@ -1,0 +1,168 @@
+<?php
+$translate = $this->plugin('translate');
+$form = $this->form;
+$form->prepare();
+
+echo $this->pageTitle($translate('Publish user-submitted items'), 1, $translate('IA Outbound'));
+echo $this->partial('internet-archive-outbound-sync/admin/partials/setup-checklist', ['setupStatus' => $this->setupStatus]);
+
+if (empty($this->contributionsItemSetId)) {
+    ?>
+<p class="error"><?php echo $translate('Configure the Contributions item set under Modules → Configure before using this page.'); ?></p>
+    <?php
+    return;
+}
+
+if (!empty($this->publishTestCollectionActive)) {
+    ?>
+<div class="alert warning ia-outbound-publish-test-collection-notice">
+    <strong><?php echo $translate('Publish test collection override is active'); ?></strong>
+    <p>
+        <?php echo sprintf(
+            $translate('User-submitted item uploads will go to %1$s, not your default collection (%2$s). Metadata push is unaffected. Clear IA_PUBLISH_TEST_COLLECTION or the Configure override before production publishing.'),
+            $this->escapeHtml($this->publishCollection ?? ''),
+            $this->escapeHtml($this->defaultIaCollection ?? '')
+        ); ?>
+    </p>
+</div>
+    <?php
+}
+
+if (!empty($this->deleteStagingItemAfterPublish)) {
+    ?>
+<p class="explanation"><?php echo $translate('After a successful upload, staging items are deleted from Omeka (they never need to be public on the site).'); ?></p>
+    <?php
+}
+?>
+<p class="ia-outbound-push-scope">
+<?php echo sprintf(
+    $translate('%1$d item(s) in %2$s ready to publish (oldest first).'),
+    (int) $this->publishableCount,
+    $this->escapeHtml($this->contributionsItemSetTitle ?: ('#' . $this->contributionsItemSetId))
+); ?>
+</p>
+
+<?php
+echo $this->headLink()->appendStylesheet($this->assetUrl('css/push-form.css', 'InternetArchiveOutboundSync'));
+echo $this->headScript()->appendFile($this->assetUrl('js/publish-items-form.js', 'InternetArchiveOutboundSync'));
+?>
+
+<?php
+$form->setAttribute('class', 'ia-outbound-push-form ia-outbound-publish-items-form');
+$form->setAttribute('data-type-confirm-threshold', (string) (int) $this->typeConfirmThreshold);
+$form->setAttribute('data-preview-ready', $this->previewReady ? '1' : '0');
+echo $this->form()->openTag($form);
+?>
+
+<div class="field ia-publish-items-field">
+    <?php echo $this->formLabel($form->get('item_ids')); ?>
+    <div class="ia-publish-items-checkboxes">
+        <?php echo $this->formElement($form->get('item_ids')); ?>
+    </div>
+</div>
+
+<div class="ia-outbound-push-actions" id="ia-outbound-publish-preview-actions">
+    <?php echo $this->formSubmit($form->get('submit_preview')); ?>
+    <p class="field-explanation">
+        <?php echo $translate('Preview shows how metadata will appear on Internet Archive without uploading. This replaces a separate dry run — nothing is sent to Internet Archive until you confirm publish below. You must preview first; after reviewing, use the publish button below the preview.'); ?>
+    </p>
+</div>
+
+<?php if ($this->previews): ?>
+<div id="ia-outbound-publish-previews" class="ia-outbound-push-previews">
+<h2><?php echo $translate('Preview'); ?></h2>
+<?php foreach ($this->previews as $itemId => $preview): ?>
+<?php
+    $status = (string) ($preview['status'] ?? '');
+    $statusClass = $status === 'failed' ? 'error' : '';
+?>
+<div class="ia-publish-item-preview-card">
+<h3><?php echo sprintf($translate('Item #%s'), (int) $itemId); ?>
+    <?php if (!empty($preview['ia_identifier'])): ?>
+    — <?php echo $this->escapeHtml($preview['ia_identifier']); ?>
+    <?php endif; ?>
+</h3>
+
+<?php if ($status === 'failed'): ?>
+<p class="error"><?php echo $this->escapeHtml($preview['message'] ?? ''); ?></p>
+<?php else: ?>
+<div class="ia-publish-item-preview-meta">
+    <?php if (!empty($preview['audio_cover'])): ?>
+    <div class="ia-publish-item-preview-image">
+        <img src="<?php echo $this->escapeHtmlAttr($this->assetUrl('img/audio-cover.png', 'InternetArchiveOutboundSync')); ?>" alt="<?php echo $this->escapeHtml($preview['item_title'] ?? ''); ?>">
+    </div>
+    <?php elseif (!empty($preview['image_url'])): ?>
+    <div class="ia-publish-item-preview-image">
+        <img src="<?php echo $this->escapeHtmlAttr($preview['image_url']); ?>" alt="<?php echo $this->escapeHtml($preview['item_title'] ?? ''); ?>">
+    </div>
+    <?php endif; ?>
+    <div class="ia-publish-item-preview-details">
+        <p><?php echo $this->escapeHtml($preview['message'] ?? ''); ?></p>
+        <?php if (!empty($preview['item_title'])): ?>
+        <p><strong><?php echo $translate('Omeka title'); ?>:</strong> <?php echo $this->escapeHtml($preview['item_title']); ?></p>
+        <?php endif; ?>
+        <?php if (!empty($preview['ia_identifier'])): ?>
+        <p><strong><?php echo $translate('IA identifier'); ?>:</strong> <code><?php echo $this->escapeHtml($preview['ia_identifier']); ?></code></p>
+        <?php endif; ?>
+        <p><strong><?php echo $translate('Publish collection'); ?>:</strong> <?php echo $this->escapeHtml($preview['publish_collection'] ?? ''); ?></p>
+        <?php if (!empty($preview['item_admin_url'])): ?>
+        <p><a href="<?php echo $this->escapeHtmlAttr($preview['item_admin_url']); ?>" target="_blank" rel="noopener"><?php echo $translate('View item in Omeka S'); ?></a></p>
+        <?php endif; ?>
+        <?php if (!empty($preview['files'])): ?>
+        <?php echo $this->partial('internet-archive-outbound-sync/admin/partials/publish-file-order', [
+            'itemId' => (int) $itemId,
+            'files' => $preview['files'],
+            'fileSortMethodLabel' => $preview['file_sort_method_label'] ?? '',
+            'fileSortWarning' => $preview['file_sort_warning'] ?? null,
+            'fileMediaIds' => $preview['file_media_ids'] ?? [],
+        ]); ?>
+        <?php endif; ?>
+    </div>
+</div>
+
+<?php if (!empty($preview['diff'])): ?>
+<?php echo $this->partial('internet-archive-outbound-sync/admin/partials/metadata-diff', ['diff' => $preview['diff']]); ?>
+<?php endif; ?>
+<?php endif; ?>
+</div>
+<?php endforeach; ?>
+</div>
+<script>
+document.getElementById('ia-outbound-publish-previews')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+</script>
+<?php endif; ?>
+
+<div
+    id="ia-outbound-publish-confirm-panel"
+    class="ia-outbound-push-confirm-panel"
+    <?php echo $this->previewReady ? '' : 'hidden'; ?>
+>
+    <h2><?php echo $translate('Confirm and publish'); ?></h2>
+    <p class="field-explanation">
+        <?php echo $translate('Review the preview above. When it looks correct, acknowledge permanent publication and upload to Internet Archive.'); ?>
+    </p>
+    <div class="field field-checkbox">
+        <?php echo $this->formLabel($form->get('acknowledge')); ?>
+        <?php echo $this->formCheckbox($form->get('acknowledge')); ?>
+    </div>
+
+    <div class="field field-confirm-text<?php echo ((int) $this->selectedItemCount >= (int) $this->typeConfirmThreshold) ? '' : ' ia-outbound-confirm-hidden'; ?>" id="ia-outbound-publish-confirm-text-field">
+        <?php echo $this->formLabel($form->get('confirm_text')); ?>
+        <?php echo $this->formText($form->get('confirm_text')); ?>
+        <p class="field-explanation" id="ia-outbound-publish-confirm-text-help"></p>
+    </div>
+
+    <div class="ia-outbound-push-actions">
+        <?php echo $this->formSubmit($form->get('submit_publish')); ?>
+    </div>
+</div>
+
+<?php echo $this->formHidden($form->get('preview_token')); ?>
+
+<?php foreach ($form as $element): ?>
+    <?php if ($element instanceof \Laminas\Form\Element\Csrf): ?>
+        <?php echo $this->formHidden($element); ?>
+    <?php endif; ?>
+<?php endforeach; ?>
+
+<?php echo $this->form()->closeTag(); ?>

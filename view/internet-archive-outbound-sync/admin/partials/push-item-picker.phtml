@@ -1,0 +1,41 @@
+<?php
+$translate = $this->plugin('translate');
+/** @var \Laminas\Form\Element\Select $element */
+$element = $this->element;
+$element->setAttribute('id', 'item_ids');
+?>
+<div class="field ia-item-picker">
+    <label class="ia-item-picker-label" for="ia-item-picker-search">
+        <?php echo $this->escapeHtml($element->getLabel()); ?>
+    </label>
+    <div
+        class="ia-item-picker-selected"
+        data-placeholder="<?php echo $this->escapeHtmlAttr($translate('No items selected')); ?>"
+    ></div>
+    <div class="ia-item-picker-toolbar">
+        <input
+            type="search"
+            id="ia-item-picker-search"
+            class="ia-item-picker-search"
+            placeholder="<?php echo $this->escapeHtmlAttr($translate('Search by title or IA identifier…')); ?>"
+            autocomplete="off"
+        >
+        <div class="ia-item-picker-actions">
+            <button type="button" class="button ia-item-picker-select-all">
+                <?php echo $translate('Select all'); ?>
+            </button>
+            <button type="button" class="button ia-item-picker-select-matching" hidden>
+                <?php echo $translate('Select matching'); ?>
+            </button>
+            <button type="button" class="button ia-item-picker-clear">
+                <?php echo $translate('Clear'); ?>
+            </button>
+            <span class="ia-item-picker-count" aria-live="polite"></span>
+        </div>
+    </div>
+    <div class="ia-item-picker-browse">
+        <div class="ia-item-picker-list" role="listbox" aria-multiselectable="true"></div>
+        <p class="ia-item-picker-empty" hidden></p>
+    </div>
+    <?php echo $this->formSelect($element); ?>
+</div>

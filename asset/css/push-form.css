@@ -1,0 +1,335 @@
+.ia-outbound-push-form .field {
+    margin-bottom: 1.25rem;
+}
+
+.ia-outbound-push-form .field-checkbox,
+.ia-outbound-push-form .field-confirm-text {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: 0.65rem 1rem;
+}
+
+.ia-outbound-push-form .field-checkbox label,
+.ia-outbound-push-form .field-confirm-text label {
+    flex: 1 1 16rem;
+    margin: 0;
+    line-height: 1.45;
+}
+
+.ia-outbound-push-form .field-checkbox input[type="checkbox"],
+.ia-outbound-push-form .field-confirm-text input[type="text"] {
+    flex: 0 0 auto;
+    margin-top: 0.15rem;
+}
+
+.ia-outbound-push-form .field-confirm-text input[type="text"] {
+    min-width: 8rem;
+    margin-top: 0;
+}
+
+.ia-outbound-push-form .field-explanation {
+    flex-basis: 100%;
+    margin: 0;
+    color: #5c6672;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.ia-outbound-push-form .ia-outbound-push-actions {
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.ia-outbound-push-form .ia-outbound-push-confirm-panel {
+    margin-top: 1.5rem;
+    padding: 1.25rem 1.35rem;
+    border: 1px solid #d8dde3;
+    background: #f8f9fa;
+}
+
+.ia-outbound-push-form .ia-outbound-push-confirm-panel h2 {
+    margin: 0 0 1rem;
+    font-size: 1.1rem;
+}
+
+.ia-outbound-push-form .ia-outbound-push-scope {
+    margin-bottom: 1rem;
+    color: #444;
+}
+
+.ia-outbound-push-form .field-item-set-hidden {
+    display: none;
+}
+
+.ia-outbound-push-form .ia-outbound-confirm-hidden {
+    display: none !important;
+}
+
+.ia-publish-items-field > label {
+    display: block;
+    margin-bottom: 0.75rem;
+}
+
+.ia-publish-items-checkboxes .checkbox,
+.ia-publish-items-checkboxes > label {
+    display: block;
+    margin: 0 0 0.5rem;
+}
+
+.ia-outbound-push-form .ia-outbound-push-actions + .ia-outbound-push-previews,
+.ia-outbound-push-previews {
+    margin-top: 2rem;
+}
+
+.ia-metadata-text {
+    margin: 0;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.ia-subject-list {
+    margin: 0;
+    padding-left: 1.5rem;
+    list-style-position: outside;
+}
+
+.ia-publish-item-preview-card {
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e6eaee;
+}
+
+.ia-publish-item-preview-card:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.ia-publish-item-preview-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.ia-publish-item-preview-image img {
+    display: block;
+    max-width: 220px;
+    max-height: 220px;
+    border: 1px solid #d8dde3;
+    background: #fff;
+}
+
+.ia-publish-item-preview-details p {
+    margin: 0 0 0.5rem;
+    line-height: 1.45;
+}
+
+.ia-publish-item-preview-files {
+    margin: 0.25rem 0 0;
+    padding-left: 1.25rem;
+}
+
+.ia-outbound-active-pushes {
+    margin-bottom: 1.5rem;
+}
+
+.ia-outbound-push-progress {
+    margin-bottom: 1rem;
+    padding: 1rem 1.15rem;
+    border: 1px solid #c5d4e8;
+    background: #f3f8fd;
+}
+
+.ia-outbound-push-progress h3 {
+    margin: 0 0 0.65rem;
+    font-size: 1.05rem;
+}
+
+.ia-outbound-push-progress p {
+    margin: 0 0 0.65rem;
+    line-height: 1.45;
+}
+
+.ia-outbound-progress-bar {
+    height: 0.65rem;
+    margin: 0.75rem 0;
+    border: 1px solid #c5ccd4;
+    background: #fff;
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.ia-outbound-progress-bar-fill {
+    height: 100%;
+    background: #4a86c8;
+    transition: width 0.3s ease;
+}
+
+.ia-outbound-progress-refresh-note,
+.ia-outbound-progress-detail {
+    color: #5c6672;
+    font-size: 0.9rem;
+}
+
+.ia-outbound-timing-info {
+    margin: 0 0 1.25rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid #e0e4e8;
+    background: #fafbfc;
+}
+
+.ia-outbound-timing-info h3 {
+    margin: 0 0 0.65rem;
+    font-size: 1rem;
+}
+
+.ia-outbound-timing-info ul {
+    margin: 0;
+    padding-left: 1.25rem;
+    line-height: 1.5;
+}
+
+.ia-outbound-timing-info li + li {
+    margin-top: 0.35rem;
+}
+
+.ia-outbound-timing-estimate {
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #e6eaee;
+}
+
+.ia-outbound-status-badge {
+    display: inline-block;
+    padding: 0.15rem 0.45rem;
+    border-radius: 2px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.ia-outbound-status-in-progress {
+    color: #1f4f7a;
+    background: #e8f2fb;
+    border: 1px solid #b8cce8;
+}
+
+.ia-outbound-status-complete {
+    color: #444;
+    background: #f2f2f2;
+    border: 1px solid #ddd;
+}
+
+tr.ia-outbound-run-active td {
+    background: #f8fbff;
+}
+
+.ia-publish-file-order-block {
+    margin-top: 0.75rem;
+}
+
+.ia-publish-file-order-heading {
+    margin-bottom: 0.35rem;
+}
+
+.ia-publish-file-order-method {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0.1rem 0.45rem;
+    font-size: 0.85rem;
+    color: #1f4f7a;
+    background: #e8f2fb;
+    border: 1px solid #b8cce8;
+    border-radius: 2px;
+}
+
+.ia-publish-file-order-warning {
+    margin: 0.35rem 0 0.5rem;
+    padding: 0.5rem 0.65rem;
+    color: #6b4f00;
+    background: #fff8e6;
+    border: 1px solid #ecd48a;
+    border-radius: 2px;
+}
+
+.ia-publish-file-order-help {
+    margin-top: 0.25rem;
+}
+
+.ia-publish-file-order-list {
+    margin: 0.5rem 0 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid #d8dde3;
+    border-radius: 2px;
+    background: #fff;
+}
+
+.ia-publish-file-order-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
+    border-bottom: 1px solid #e6eaee;
+    cursor: default;
+}
+
+.ia-publish-file-order-item:last-child {
+    border-bottom: 0;
+}
+
+.ia-publish-file-order-item[draggable="true"] {
+    cursor: grab;
+}
+
+.ia-publish-file-order-item.ia-publish-file-order-dragging {
+    opacity: 0.55;
+    cursor: grabbing;
+}
+
+.ia-publish-file-order-item.ia-publish-file-order-drop-target {
+    background: #f0f6fc;
+}
+
+.ia-publish-file-order-index {
+    min-width: 1.25rem;
+    font-weight: 600;
+    color: #555;
+}
+
+.ia-publish-file-order-handle {
+    color: #888;
+    font-size: 0.95rem;
+    line-height: 1;
+    user-select: none;
+}
+
+.ia-publish-file-order-name {
+    flex: 1 1 auto;
+    word-break: break-word;
+}
+
+.ia-publish-file-order-size {
+    color: #666;
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+.ia-publish-file-order-primary {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #1f4f7a;
+    white-space: nowrap;
+}
+
+.ia-publish-file-order-synthetic {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #5a5a5a;
+    white-space: nowrap;
+}
+
+.ia-publish-file-order-item-synthetic {
+    background: #f7f7f7;
+}

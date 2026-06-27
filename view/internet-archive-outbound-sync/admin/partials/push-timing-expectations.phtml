@@ -1,0 +1,28 @@
+<?php
+$translate = $this->plugin('translate');
+$timing = $this->timingDefaults ?? [];
+$chunkSize = (int) ($timing['chunk_size'] ?? 5);
+?>
+<div class="ia-outbound-timing-info">
+    <h3><?php echo $translate('What to expect when pushing'); ?></h3>
+    <ul>
+        <li><?php echo $translate('Pushes run as background jobs. Each item is patched on Internet Archive, then Omeka confirms the metadata read API reflects the expected values (usually within seconds).'); ?></li>
+        <li><?php echo $translate('Changes usually appear on Internet Archive shortly after each item is verified, not all at once when you click push.'); ?></li>
+        <li>
+            <?php echo sprintf(
+                $translate('Large selections are processed in batches of up to %d items. Total time depends on how many items you selected.'),
+                $chunkSize
+            ); ?>
+        </li>
+        <li><?php echo $translate('You can leave this page after queuing a push. Track progress under IA Outbound → History.'); ?></li>
+    </ul>
+    <p
+        class="ia-outbound-timing-estimate field-explanation"
+        id="ia-outbound-timing-estimate"
+        data-chunk-size="<?php echo (int) $chunkSize; ?>"
+        data-per-item-min-seconds="<?php echo (int) ($timing['per_item_min_seconds'] ?? 5); ?>"
+        data-per-item-typical-seconds="<?php echo (int) ($timing['per_item_typical_seconds'] ?? 15); ?>"
+        data-per-item-max-seconds="<?php echo (int) ($timing['per_item_max_seconds'] ?? 30); ?>"
+        hidden
+    ></p>
+</div>

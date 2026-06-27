@@ -1,0 +1,130 @@
+<?php
+$translate = $this->plugin('translate');
+$form = $this->form;
+$settings = $this->moduleSettings;
+$form->prepare();
+
+$fromEnv = $settings->credentialsFromEnv();
+$stored = $settings->hasStoredCredentialsInDatabase();
+$accessHint = $settings->storedAccessKeyHint();
+
+$credFields = ['change_credentials', 'ia_s3_access_key', 'ia_s3_secret_key'];
+$mapFields = ['item_set_collection_map_json'];
+$itemSets = $this->itemSets ?? [];
+$initialMap = $settings->itemSetCollectionMap();
+?>
+<link rel="stylesheet" href="<?php echo $this->escapeHtmlAttr($this->assetUrl('css/config-credentials.css', 'InternetArchiveOutboundSync')); ?>">
+<link rel="stylesheet" href="<?php echo $this->escapeHtmlAttr($this->assetUrl('css/config-item-set-map.css', 'InternetArchiveOutboundSync')); ?>">
+<script src="<?php echo $this->escapeHtmlAttr($this->assetUrl('js/config-credentials.js', 'InternetArchiveOutboundSync')); ?>"></script>
+<script src="<?php echo $this->escapeHtmlAttr($this->assetUrl('js/config-item-set-map.js', 'InternetArchiveOutboundSync')); ?>"></script>
+
+<div
+    id="ia-outbound-credentials-panel"
+    class="ia-outbound-credentials-panel<?php echo $fromEnv ? ' is-env' : ''; ?>"
+    data-stored="<?php echo $stored ? '1' : '0'; ?>"
+    data-from-env="<?php echo $fromEnv ? '1' : '0'; ?>"
+>
+    <?php if ($fromEnv): ?>
+    <p><strong><?php echo $translate('S3 credentials'); ?>:</strong>
+        <?php echo $translate('Loaded from environment variables (IA_S3_ACCESS_KEY / IA_S3_SECRET_KEY). Values below are not used at runtime.'); ?></p>
+    <?php elseif ($stored): ?>
+    <p><strong><?php echo $translate('S3 credentials'); ?>:</strong>
+        <?php echo sprintf($translate('Configured and stored in Omeka (access key ending %s).'), $this->escapeHtml($accessHint)); ?></p>
+    <p><?php echo $translate('Credential fields are hidden to avoid accidental exposure or overwrite. Use the button below only when you need to replace them.'); ?></p>
+    <p>
+        <button type="button" class="button" id="ia-outbound-change-credentials-btn">
+            <?php echo $translate('Change S3 credentials'); ?>
+        </button>
+        <button type="button" class="button" id="ia-outbound-cancel-credentials-btn" hidden>
+            <?php echo $translate('Cancel credential change'); ?>
+        </button>
+    </p>
+    <?php else: ?>
+    <p><strong><?php echo $translate('S3 credentials'); ?>:</strong>
+        <?php echo $translate('Enter your Internet Archive S3 keys below, or set IA_S3_ACCESS_KEY and IA_S3_SECRET_KEY in the server environment.'); ?></p>
+    <?php endif; ?>
+</div>
+
+<?php if (!$fromEnv): ?>
+<div id="ia-outbound-credentials-fields" class="ia-outbound-credentials-fields">
+<?php foreach ($credFields as $name): ?>
+    <?php if ($form->has($name)): ?>
+    <div class="field">
+        <?php
+        $element = $form->get($name);
+        if ($name === 'change_credentials') {
+            echo $this->formHidden($element);
+        } elseif ($name === 'ia_s3_secret_key') {
+            echo $this->formLabel($element);
+            echo $this->formPassword($element);
+        } else {
+            echo $this->formRow($element);
+        }
+        ?>
+    </div>
+    <?php endif; ?>
+<?php endforeach; ?>
+</div>
+<?php else: ?>
+    <?php echo $this->formHidden($form->get('change_credentials')); ?>
+<?php endif; ?>
+
+<?php if ($settings->publishTestCollectionFromEnv()): ?>
+<p><strong><?php echo $translate('Publish test collection override'); ?>:</strong>
+        <?php echo sprintf(
+        $translate('Loaded from environment (IA_PUBLISH_TEST_COLLECTION=%s). User-submitted item uploads use this collection; metadata push is unchanged.'),
+        $this->escapeHtml($settings->publishTestCollectionOverride())
+    ); ?></p>
+<?php endif; ?>
+
+<?php foreach ($form as $element): ?>
+    <?php
+    $name = $element->getName();
+    if (in_array($name, $credFields, true) || in_array($name, $mapFields, true)) {
+        continue;
+    }
+    if ($name === 'publish_test_collection' && $settings->publishTestCollectionFromEnv()) {
+        continue;
+    }
+    if ($name === 'default_ia_collection') {
+        ?>
+    <div class="field">
+        <?php echo $this->formRow($element); ?>
+    </div>
+    <div
+        class="field ia-outbound-item-set-map"
+        data-item-sets="<?php echo $this->escapeHtmlAttr(json_encode($itemSets)); ?>"
+        data-initial-map="<?php echo $this->escapeHtmlAttr(json_encode((object) $initialMap)); ?>"
+    >
+        <label><?php echo $translate('Item set → IA collection mapping'); ?></label>
+        <p class="explanation">
+            <?php echo $translate('Map each Omeka item set to an Internet Archive collection identifier. Only mapped item sets appear on the push page.'); ?>
+        </p>
+        <p class="ia-outbound-item-set-map-empty" hidden>
+            <?php echo $translate('No mappings yet. Add at least one item set mapping.'); ?>
+        </p>
+        <table class="ia-outbound-item-set-map-table">
+            <thead>
+                <tr>
+                    <th><?php echo $translate('Omeka item set'); ?></th>
+                    <th><?php echo $translate('IA collection ID'); ?></th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <p>
+            <button type="button" class="button ia-outbound-map-add">
+                <?php echo $translate('Add mapping'); ?>
+            </button>
+        </p>
+        <?php echo $this->formHidden($form->get('item_set_collection_map_json')); ?>
+    </div>
+        <?php
+        continue;
+    }
+    ?>
+    <div class="field">
+        <?php echo $this->formRow($element); ?>
+    </div>
+<?php endforeach; ?>

@@ -1,0 +1,74 @@
+<?php
+$translate = $this->plugin('translate');
+$run = $this->run;
+$runProgress = $this->runProgress;
+echo $this->pageTitle(sprintf($translate('Run #%s'), (int) $run['id']), 1, $translate('IA Outbound'));
+if ($this->isActive && $runProgress):
+    echo $this->partial('internet-archive-outbound-sync/admin/partials/push-progress', [
+        'activePushes' => [$runProgress],
+        'timingDefaults' => $this->timingDefaults,
+        'statusUrl' => $this->statusUrl,
+    ]);
+    echo $this->headScript()->appendFile($this->assetUrl('js/push-progress.js', 'InternetArchiveOutboundSync'));
+endif;
+echo $this->headLink()->appendStylesheet($this->assetUrl('css/push-form.css', 'InternetArchiveOutboundSync'));
+?>
+<p><strong><?php echo $translate('Type'); ?>:</strong> <?php echo $this->escapeHtml($run['run_type'] ?? ''); ?></p>
+<p><strong><?php echo $translate('Started'); ?>:</strong> <?php echo $this->escapeHtml($run['started']); ?></p>
+<?php if (!empty($run['job_id'])): ?>
+<p><strong><?php echo $translate('Job'); ?>:</strong>
+<a href="<?php echo $this->url('admin/id', ['controller' => 'job', 'id' => $run['job_id']]); ?>">#<?php echo (int) $run['job_id']; ?></a></p>
+<?php endif; ?>
+
+<h2><?php echo $translate('Per-item results'); ?></h2>
+<table class="tablesaw">
+    <thead>
+        <tr>
+            <th><?php echo $translate('Item'); ?></th>
+            <th><?php echo $translate('IA ID'); ?></th>
+            <th><?php echo $translate('Status'); ?></th>
+            <th><?php echo $translate('Task'); ?></th>
+            <th><?php echo $translate('Message'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($run['items'] ?? [] as $item): ?>
+        <?php
+        $iaIdentifier = trim((string) ($item['ia_identifier'] ?? ''));
+        $status = (string) ($item['status'] ?? '');
+        $showIaLink = $iaIdentifier !== '' && $status === 'success';
+        ?>
+        <tr>
+            <td><?php echo $item['item_id'] ? (int) $item['item_id'] : '—'; ?></td>
+            <td>
+                <?php if ($showIaLink): ?>
+                <?php echo $this->partial('internet-archive-outbound-sync/admin/partials/ia-details-link', [
+                    'identifier' => $iaIdentifier,
+                ]); ?>
+                <?php elseif ($iaIdentifier !== ''): ?>
+                <?php echo $this->escapeHtml($iaIdentifier); ?>
+                <?php endif; ?>
+            </td>
+            <td><?php echo $this->escapeHtml($status); ?></td>
+            <td><?php echo $this->escapeHtml($item['task_id'] ?? ''); ?></td>
+            <td>
+                <?php echo $this->escapeHtml($item['message'] ?? ''); ?>
+                <?php if ($showIaLink): ?>
+                <span class="ia-outbound-history-ia-link">
+                    —
+                    <?php echo $this->partial('internet-archive-outbound-sync/admin/partials/ia-details-link', [
+                        'identifier' => $iaIdentifier,
+                        'label' => $translate('View on Internet Archive'),
+                    ]); ?>
+                </span>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+
+<?php if (!empty($run['log'])): ?>
+<h2><?php echo $translate('Log'); ?></h2>
+<pre><?php echo $this->escapeHtml($run['log']); ?></pre>
+<?php endif; ?>

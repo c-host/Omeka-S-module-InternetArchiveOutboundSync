@@ -1,0 +1,130 @@
+<?php
+$translate = $this->plugin('translate');
+$form = $this->form;
+$form->prepare();
+
+echo $this->pageTitle($translate('Push metadata to Internet Archive'), 1, $translate('IA Outbound'));
+echo $this->partial('internet-archive-outbound-sync/admin/partials/setup-checklist', ['setupStatus' => $this->setupStatus]);
+echo $this->partial('internet-archive-outbound-sync/admin/partials/push-progress', [
+    'activePushes' => $this->activePushes,
+    'timingDefaults' => $this->timingDefaults,
+    'statusUrl' => $this->statusUrl,
+]);
+if (empty($this->metadataPushEnabled)) {
+    echo '<p class="warning">' . $translate('Metadata push is disabled. Preview is available; enable push under Modules → Configure to write to Internet Archive.') . '</p>';
+}
+if (empty($this->hasMappedItemSets)) {
+    echo '<p class="warning">' . $translate('No item set mappings are configured. Add mappings under Modules → Configure before pushing.') . '</p>';
+}
+?>
+<p class="ia-outbound-push-scope" id="ia-outbound-push-scope" data-count="<?php echo (int) $this->pushableCount; ?>">
+<?php if ($this->itemSetTitle): ?>
+    <?php echo sprintf(
+        $translate('%d item(s) with IA identifiers in item set “%s”.'),
+        (int) $this->pushableCount,
+        $this->escapeHtml($this->itemSetTitle)
+    ); ?>
+<?php else: ?>
+    <?php echo sprintf($translate('%d item(s) with IA identifiers in mapped item sets.'), (int) $this->pushableCount); ?>
+<?php endif; ?>
+</p>
+
+<?php if (!empty($this->metadataPushEnabled) && !empty($this->hasMappedItemSets)): ?>
+<?php echo $this->partial('internet-archive-outbound-sync/admin/partials/push-timing-expectations', [
+    'timingDefaults' => $this->timingDefaults,
+]); ?>
+<?php endif; ?>
+
+<?php
+echo $this->headLink()->appendStylesheet($this->assetUrl('css/push-item-picker.css', 'InternetArchiveOutboundSync'));
+echo $this->headLink()->appendStylesheet($this->assetUrl('css/push-form.css', 'InternetArchiveOutboundSync'));
+echo $this->headScript()->appendFile($this->assetUrl('js/push-item-picker.js', 'InternetArchiveOutboundSync'));
+echo $this->headScript()->appendFile($this->assetUrl('js/push-progress.js', 'InternetArchiveOutboundSync'));
+?>
+
+<?php
+$form->setAttribute('class', 'ia-outbound-push-form');
+$form->setAttribute('data-items-url', $this->itemsUrl);
+$form->setAttribute('data-type-confirm-threshold', (string) (int) $this->typeConfirmThreshold);
+$form->setAttribute('data-preview-ready', $this->previewReady ? '1' : '0');
+echo $this->form()->openTag($form);
+?>
+
+<?php if ($this->multipleItemSets): ?>
+<div class="field">
+    <?php echo $this->formLabel($form->get('item_set_id')); ?>
+    <?php echo $this->formSelect($form->get('item_set_id')); ?>
+</div>
+<?php else: ?>
+<div class="field field-item-set-hidden">
+    <?php echo $this->formHidden($form->get('item_set_id')); ?>
+</div>
+<?php endif; ?>
+
+<?php echo $this->partial('internet-archive-outbound-sync/admin/partials/push-item-picker', [
+    'element' => $form->get('item_ids'),
+]); ?>
+
+<div class="ia-outbound-push-actions" id="ia-outbound-preview-actions">
+    <?php echo $this->formSubmit($form->get('submit_preview')); ?>
+    <p class="field-explanation">
+        <?php echo $translate('Preview compares Omeka metadata with Internet Archive without writing any changes. You must preview first; after reviewing the results, use the push button below the preview to update Internet Archive metadata.'); ?>
+    </p>
+</div>
+
+<?php if ($this->previews): ?>
+<div id="ia-outbound-push-previews" class="ia-outbound-push-previews">
+<h2><?php echo $translate('Preview'); ?></h2>
+<?php foreach ($this->previews as $itemId => $preview): ?>
+<?php
+$status = (string) ($preview['status'] ?? '');
+$statusClass = $status === 'failed' ? 'error' : ($status === 'skipped' ? 'metadata' : '');
+?>
+<h3><?php echo sprintf($translate('Item #%s'), (int) $itemId); ?> — <?php echo $this->escapeHtml($preview['ia_identifier'] ?? ''); ?></h3>
+<p<?php echo $statusClass ? ' class="' . $statusClass . '"' : ''; ?>><?php echo $this->escapeHtml($preview['message'] ?? ''); ?></p>
+<?php if (!empty($preview['diff'])): ?>
+<?php echo $this->partial('internet-archive-outbound-sync/admin/partials/metadata-diff', ['diff' => $preview['diff']]); ?>
+<?php endif; ?>
+<?php endforeach; ?>
+</div>
+<script>
+document.getElementById('ia-outbound-push-previews')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+</script>
+<?php endif; ?>
+
+<div
+    id="ia-outbound-push-confirm-panel"
+    class="ia-outbound-push-confirm-panel"
+    <?php echo ($this->previewReady && $this->metadataPushEnabled) ? '' : 'hidden'; ?>
+>
+    <h2><?php echo $translate('Confirm and push'); ?></h2>
+    <p class="field-explanation">
+        <?php echo $translate('Review the preview above. When it looks correct, acknowledge the overwrite and push to Internet Archive.'); ?>
+    </p>
+    <div class="field field-checkbox">
+        <?php echo $this->formLabel($form->get('acknowledge')); ?>
+        <?php echo $this->formCheckbox($form->get('acknowledge')); ?>
+    </div>
+
+    <div class="field field-confirm-text<?php echo ((int) $this->selectedItemCount >= (int) $this->typeConfirmThreshold) ? '' : ' ia-outbound-confirm-hidden'; ?>" id="ia-outbound-confirm-text-field">
+        <?php echo $this->formLabel($form->get('confirm_text')); ?>
+        <?php echo $this->formText($form->get('confirm_text')); ?>
+        <p class="field-explanation" id="ia-outbound-confirm-text-help"></p>
+    </div>
+
+    <?php if ($this->metadataPushEnabled): ?>
+    <div class="ia-outbound-push-actions">
+        <?php echo $this->formSubmit($form->get('submit_push')); ?>
+    </div>
+    <?php endif; ?>
+</div>
+
+<?php echo $this->formHidden($form->get('preview_token')); ?>
+
+<?php foreach ($form as $element): ?>
+    <?php if ($element instanceof \Laminas\Form\Element\Csrf): ?>
+        <?php echo $this->formHidden($element); ?>
+    <?php endif; ?>
+<?php endforeach; ?>
+
+<?php echo $this->form()->closeTag(); ?>

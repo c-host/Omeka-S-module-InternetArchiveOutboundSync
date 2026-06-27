@@ -1,0 +1,83 @@
+<?php
+$translate = $this->plugin('translate');
+$diff = $this->diff ?? [];
+$changes = $diff['changes'] ?? [];
+$skipped = $diff['skipped'] ?? [];
+?>
+<?php if (!$changes && !$skipped): ?>
+<p class="metadata"><?php echo $translate('No metadata changes.'); ?></p>
+<?php else: ?>
+<?php if ($changes): ?>
+<table class="tablesaw">
+    <thead>
+        <tr>
+            <th><?php echo $translate('Field'); ?></th>
+            <th><?php echo $translate('Before (Internet Archive)'); ?></th>
+            <th><?php echo $translate('After (Internet Archive)'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($changes as $change):
+            $field = (string) ($change['field'] ?? '');
+            $multiline = $field === 'description';
+            $isList = $field === 'subject' || $field === 'language';
+            ?>
+        <tr>
+            <td><strong><?php echo $this->escapeHtml($field); ?></strong></td>
+            <td>
+                <?php if ($isList): ?>
+                <ul class="ia-subject-list">
+                    <?php foreach ($change['before_display_values'] ?? [] as $value): ?>
+                    <li><?php echo $this->escapeHtml($value); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php elseif ($multiline): ?>
+                <div class="ia-metadata-text"><?php echo $this->escapeHtml($change['before'] ?? ''); ?></div>
+                <?php else: ?>
+                <?php echo $this->escapeHtml($change['before'] ?? ''); ?>
+                <?php endif; ?>
+            </td>
+            <td>
+                <?php if ($isList): ?>
+                <ul class="ia-subject-list">
+                    <?php foreach ($change['after_display_values'] ?? [] as $value): ?>
+                    <li><?php echo $this->escapeHtml($value); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+                <?php elseif ($multiline): ?>
+                <div class="ia-metadata-text"><?php echo $this->escapeHtml($change['after'] ?? ''); ?></div>
+                <?php else: ?>
+                <?php echo $this->escapeHtml($change['after'] ?? ''); ?>
+                <?php endif; ?>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<?php endif; ?>
+<?php if ($skipped): ?>
+<h4><?php echo $translate('Left unchanged on Internet Archive'); ?></h4>
+<p class="metadata"><?php echo $translate('These fields have values on IA but Omeka has no mapped value. They are never removed.'); ?></p>
+<table class="tablesaw">
+    <thead>
+        <tr>
+            <th><?php echo $translate('Field'); ?></th>
+            <th><?php echo $translate('Current (Internet Archive)'); ?></th>
+            <th><?php echo $translate('Reason'); ?></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($skipped as $row):
+            $field = (string) ($row['field'] ?? '');
+            $multiline = $field === 'description';
+            ?>
+        <tr>
+            <td><strong><?php echo $this->escapeHtml($field); ?></strong></td>
+            <td><?php if ($multiline): ?><div class="ia-metadata-text"><?php echo $this->escapeHtml($row['before'] ?? ''); ?></div><?php else: ?><?php echo $this->escapeHtml($row['before'] ?? ''); ?><?php endif; ?></td>
+            <td class="metadata"><?php echo $this->escapeHtml($row['reason'] ?? ''); ?></td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<?php endif; ?>
+<?php endif; ?>

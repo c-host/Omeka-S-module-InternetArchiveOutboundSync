@@ -1,0 +1,16 @@
+<?php
+use InternetArchiveOutboundSync\Service\IaPath;
+
+$translate = $this->plugin('translate');
+$identifier = trim((string) ($this->identifier ?? ''));
+if ($identifier === '') {
+    return;
+}
+
+$url = IaPath::detailsUrl($identifier);
+$label = trim((string) ($this->label ?? ''));
+if ($label === '') {
+    $label = $identifier;
+}
+?>
+<a href="<?php echo $this->escapeHtmlAttr($url); ?>" target="_blank" rel="noopener"><?php echo $this->escapeHtml($label); ?></a>

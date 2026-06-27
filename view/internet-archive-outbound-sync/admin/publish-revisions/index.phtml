@@ -1,0 +1,104 @@
+<?php
+$translate = $this->plugin('translate');
+$form = $this->form;
+$form->prepare();
+
+echo $this->pageTitle($translate('Publish metadata revisions'), 1, $translate('IA Outbound'));
+echo $this->partial('internet-archive-outbound-sync/admin/partials/setup-checklist', ['setupStatus' => $this->setupStatus]);
+?>
+<p class="explanation"><?php echo $translate('Contribute-approved metadata changes on items that already exist on Internet Archive. No file upload — metadata patch only.'); ?></p>
+<p class="ia-outbound-push-scope"><?php echo sprintf($translate('%d revision(s) queued.'), count($this->queued)); ?></p>
+<?php if (empty($this->metadataPushEnabled)): ?>
+<p class="warning"><?php echo $translate('Metadata push is disabled. Preview is available; enable push under Modules → Configure to write to Internet Archive.'); ?></p>
+<?php endif; ?>
+
+<?php
+echo $this->headLink()->appendStylesheet($this->assetUrl('css/push-form.css', 'InternetArchiveOutboundSync'));
+echo $this->headScript()->appendFile($this->assetUrl('js/publish-revisions-form.js', 'InternetArchiveOutboundSync'));
+?>
+
+<?php
+$form->setAttribute('class', 'ia-outbound-push-form ia-outbound-publish-revisions-form');
+$form->setAttribute('data-type-confirm-threshold', (string) (int) $this->typeConfirmThreshold);
+$form->setAttribute('data-preview-ready', $this->previewReady ? '1' : '0');
+$form->setAttribute('data-metadata-push-enabled', $this->metadataPushEnabled ? '1' : '0');
+echo $this->form()->openTag($form);
+?>
+
+<div class="field ia-publish-items-field">
+    <?php echo $this->formLabel($form->get('queue_ids')); ?>
+    <p class="field-explanation">
+        <?php echo $translate('Listed oldest first by contribution validation date.'); ?>
+    </p>
+    <div class="ia-publish-items-checkboxes">
+        <?php echo $this->formElement($form->get('queue_ids')); ?>
+    </div>
+</div>
+
+<div class="ia-outbound-push-actions" id="ia-outbound-revisions-preview-actions">
+    <?php echo $this->formSubmit($form->get('submit_preview')); ?>
+    <p class="field-explanation">
+        <?php echo $translate('Preview compares Omeka metadata with Internet Archive without writing any changes. You must preview first; after reviewing the results, use the push button below the preview to update Internet Archive metadata.'); ?>
+    </p>
+</div>
+
+<?php if ($this->previews): ?>
+<div id="ia-outbound-revisions-previews" class="ia-outbound-push-previews">
+<h2><?php echo $translate('Preview'); ?></h2>
+<?php foreach ($this->previews as $queueId => $preview): ?>
+<?php
+$status = (string) ($preview['status'] ?? '');
+$statusClass = $status === 'failed' ? 'error' : ($status === 'skipped' ? 'metadata' : '');
+$row = $preview['queue'] ?? [];
+$itemId = (int) ($row['item_id'] ?? 0);
+?>
+<div class="ia-publish-item-preview-card">
+<h3><?php echo sprintf($translate('Item #%s'), $itemId); ?> — <?php echo $this->escapeHtml($preview['ia_identifier'] ?? ($row['ia_identifier'] ?? '')); ?></h3>
+<p<?php echo $statusClass ? ' class="' . $statusClass . '"' : ''; ?>><?php echo $this->escapeHtml($preview['message'] ?? ''); ?></p>
+<?php if (!empty($preview['diff'])): ?>
+<?php echo $this->partial('internet-archive-outbound-sync/admin/partials/metadata-diff', ['diff' => $preview['diff']]); ?>
+<?php endif; ?>
+</div>
+<?php endforeach; ?>
+</div>
+<script>
+document.getElementById('ia-outbound-revisions-previews')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+</script>
+<?php endif; ?>
+
+<div
+    id="ia-outbound-revisions-confirm-panel"
+    class="ia-outbound-push-confirm-panel"
+    <?php echo ($this->previewReady && $this->metadataPushEnabled) ? '' : 'hidden'; ?>
+>
+    <h2><?php echo $translate('Confirm and push'); ?></h2>
+    <p class="field-explanation">
+        <?php echo $translate('Review the preview above. When it looks correct, acknowledge the overwrite and push to Internet Archive.'); ?>
+    </p>
+    <div class="field field-checkbox">
+        <?php echo $this->formLabel($form->get('acknowledge')); ?>
+        <?php echo $this->formCheckbox($form->get('acknowledge')); ?>
+    </div>
+
+    <div class="field field-confirm-text<?php echo ((int) $this->selectedQueueCount >= (int) $this->typeConfirmThreshold) ? '' : ' ia-outbound-confirm-hidden'; ?>" id="ia-outbound-revisions-confirm-text-field">
+        <?php echo $this->formLabel($form->get('confirm_text')); ?>
+        <?php echo $this->formText($form->get('confirm_text')); ?>
+        <p class="field-explanation" id="ia-outbound-revisions-confirm-text-help"></p>
+    </div>
+
+    <?php if ($this->metadataPushEnabled): ?>
+    <div class="ia-outbound-push-actions">
+        <?php echo $this->formSubmit($form->get('submit_push')); ?>
+    </div>
+    <?php endif; ?>
+</div>
+
+<?php echo $this->formHidden($form->get('preview_token')); ?>
+
+<?php foreach ($form as $element): ?>
+    <?php if ($element instanceof \Laminas\Form\Element\Csrf): ?>
+        <?php echo $this->formHidden($element); ?>
+    <?php endif; ?>
+<?php endforeach; ?>
+
+<?php echo $this->form()->closeTag(); ?>

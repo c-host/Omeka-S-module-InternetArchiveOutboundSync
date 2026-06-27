@@ -1,0 +1,67 @@
+<?php
+$translate = $this->plugin('translate');
+$activeRunIds = array_flip($this->activeRunIds ?? []);
+echo $this->pageTitle($translate('Outbound history'), 1, $translate('IA Outbound'));
+echo $this->partial('internet-archive-outbound-sync/admin/partials/push-progress', [
+    'activePushes' => $this->activePushes,
+    'timingDefaults' => $this->timingDefaults,
+    'statusUrl' => $this->statusUrl,
+]);
+echo $this->headLink()->appendStylesheet($this->assetUrl('css/push-form.css', 'InternetArchiveOutboundSync'));
+echo $this->headScript()->appendFile($this->assetUrl('js/push-progress.js', 'InternetArchiveOutboundSync'));
+?>
+<table class="tablesaw">
+    <thead>
+        <tr>
+            <th><?php echo $translate('ID'); ?></th>
+            <th><?php echo $translate('Type'); ?></th>
+            <th><?php echo $translate('Started'); ?></th>
+            <th><?php echo $translate('Job'); ?></th>
+            <th><?php echo $translate('Stats'); ?></th>
+            <th><?php echo $translate('Status'); ?></th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        <?php foreach ($this->runs as $run): ?>
+        <?php
+        $stats = $run['stats'] ?? [];
+        $runId = (int) $run['id'];
+        $isActive = isset($activeRunIds[$runId]);
+        ?>
+        <tr<?php echo $isActive ? ' class="ia-outbound-run-active"' : ''; ?>>
+            <td><?php echo $runId; ?></td>
+            <td><?php echo $this->escapeHtml($run['run_type'] ?? ''); ?></td>
+            <td><?php echo $this->escapeHtml($run['started']); ?></td>
+            <td>
+                <?php if (!empty($run['job_id'])): ?>
+                <a href="<?php echo $this->url('admin/id', ['controller' => 'job', 'id' => $run['job_id']]); ?>">#<?php echo (int) $run['job_id']; ?></a>
+                <?php else: ?>—<?php endif; ?>
+            </td>
+            <td>
+                <?php
+                $parts = [];
+                foreach (['success', 'skipped', 'failed'] as $k) {
+                    if (!empty($stats[$k])) {
+                        $parts[] = $k . ': ' . (int) $stats[$k];
+                    }
+                }
+                echo $this->escapeHtml($parts ? implode(', ', $parts) : '—');
+                ?>
+            </td>
+            <td>
+                <?php if ($isActive): ?>
+                <span class="ia-outbound-status-badge ia-outbound-status-in-progress"><?php echo $translate('In progress'); ?></span>
+                <?php else: ?>
+                <span class="ia-outbound-status-badge ia-outbound-status-complete"><?php echo $translate('Complete'); ?></span>
+                <?php endif; ?>
+            </td>
+            <td>
+                <a href="<?php echo $this->url('admin/internet-archive-outbound-sync/default', [
+                    'controller' => 'history', 'action' => 'show', 'id' => $runId,
+                ]); ?>"><?php echo $translate('Details'); ?></a>
+            </td>
+        </tr>
+        <?php endforeach; ?>
+    </tbody>
+</table>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="test/bootstrap.php"
+         colors="true"
+         cacheResult="false">
+    <testsuites>
+        <testsuite name="IA Outbound">
+            <directory>test</directory>
+            <exclude>test/smoke.php</exclude>
+            <exclude>test/bootstrap.php</exclude>
+            <exclude>test/metadata_merge_and_subjects.php</exclude>
+            <exclude>test/metadata_revision_publish_current.php</exclude>
+            <exclude>test/ia_identifier_suffix.php</exclude>
+            <exclude>test/upload_manifest_order.php</exclude>
+            <exclude>test/ia_upload_filename.php</exclude>
+            <exclude>test/s3_meta_headers.php</exclude>
+            <exclude>test/ia_s3_meta_header_names.php</exclude>
+            <exclude>test/audio_publish_cover.php</exclude>
+            <exclude>test/languages_from_item.php</exclude>
+            <exclude>test/marc_language_resolver.php</exclude>
+        </testsuite>
+    </testsuites>
+</phpunit>

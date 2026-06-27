@@ -1,0 +1,62 @@
+<?php
+$translate = $this->plugin('translate');
+$pushes = $this->activePushes ?? [];
+if (!$pushes) {
+    return;
+}
+$historyUrl = $this->historyBrowseUrl ?? $this->url('admin/internet-archive-outbound-sync/default', [
+    'controller' => 'history',
+    'action' => 'browse',
+]);
+?>
+<div class="ia-outbound-active-pushes" id="ia-outbound-active-pushes" data-refresh-url="<?php echo $this->escapeHtmlAttr($this->statusUrl ?? ''); ?>">
+    <?php foreach ($pushes as $push): ?>
+    <?php
+    $runId = (int) ($push['run_id'] ?? 0);
+    $total = (int) ($push['total'] ?? 0);
+    $completed = (int) ($push['completed'] ?? 0);
+    $remaining = (int) ($push['remaining'] ?? 0);
+    $estimate = $push['estimate_remaining'] ?? [];
+    $detailUrl = $this->url('admin/internet-archive-outbound-sync/default', [
+        'controller' => 'history',
+        'action' => 'show',
+        'id' => $runId,
+    ]);
+    $percent = $total > 0 ? (int) round(($completed / $total) * 100) : 0;
+    ?>
+    <div class="ia-outbound-push-progress notice" data-run-id="<?php echo $runId; ?>">
+        <h3><?php echo $translate('Metadata push in progress'); ?></h3>
+        <p>
+            <?php echo sprintf(
+                $translate('Run #%1$d: %2$d of %3$d items complete (%4$s elapsed).'),
+                $runId,
+                $completed,
+                $total,
+                $this->escapeHtml($push['elapsed_label'] ?? '')
+            ); ?>
+        </p>
+        <div class="ia-outbound-progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="<?php echo $total; ?>" aria-valuenow="<?php echo $completed; ?>">
+            <div class="ia-outbound-progress-bar-fill" style="width: <?php echo (int) $percent; ?>%;"></div>
+        </div>
+        <p class="ia-outbound-progress-detail">
+            <?php if ($remaining > 0): ?>
+                <?php echo sprintf(
+                    $translate('About %1$d–%2$d seconds may remain. Each item is verified on Internet Archive after the metadata patch is sent.'),
+                    (int) ($estimate['min_seconds'] ?? 0),
+                    (int) ($estimate['max_seconds'] ?? 0)
+                ); ?>
+            <?php else: ?>
+                <?php echo $translate('Run complete.'); ?>
+            <?php endif; ?>
+        </p>
+        <p>
+            <a href="<?php echo $this->escapeHtmlAttr($detailUrl); ?>"><?php echo $translate('View run details'); ?></a>
+            ·
+            <a href="<?php echo $this->escapeHtmlAttr($historyUrl); ?>"><?php echo $translate('History'); ?></a>
+        </p>
+    </div>
+    <?php endforeach; ?>
+    <p class="ia-outbound-progress-refresh-note">
+        <?php echo $translate('This banner updates automatically while a push is running.'); ?>
+    </p>
+</div>

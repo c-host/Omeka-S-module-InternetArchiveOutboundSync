@@ -1,0 +1,72 @@
+<?php
+$translate = $this->plugin('translate');
+$status = $this->setupStatus ?? ['ready' => true, 'items' => [], 'open_count' => 0, 'required_open_count' => 0];
+$items = $status['items'] ?? [];
+$requiredOpen = (int) ($status['required_open_count'] ?? 0);
+$openCount = (int) ($status['open_count'] ?? 0);
+if ($requiredOpen > 0) {
+    $summaryStatus = sprintf($translate('%d required step(s) open'), $requiredOpen);
+    $summaryClass = 'warning';
+} elseif ($openCount > 0) {
+    $summaryStatus = sprintf($translate('%d recommended step(s) open'), $openCount);
+    $summaryClass = 'warning';
+} else {
+    $summaryStatus = $translate('All checks passed');
+    $summaryClass = 'success';
+}
+?>
+<details class="ia-outbound-setup-checklist">
+    <summary class="ia-outbound-setup-checklist-summary">
+        <strong><?php echo $translate('Before you push to Internet Archive'); ?></strong>
+        <span class="alert <?php echo $this->escapeHtmlAttr($summaryClass); ?>"><?php echo $summaryStatus; ?></span>
+        <span class="metadata"><?php echo $translate('Click to expand setup details'); ?></span>
+    </summary>
+    <div class="ia-outbound-setup-checklist-body">
+        <table class="tablesaw">
+            <thead>
+                <tr>
+                    <th><?php echo $translate('Status'); ?></th>
+                    <th><?php echo $translate('Step'); ?></th>
+                    <th><?php echo $translate('What to do'); ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($items as $item): ?>
+                <?php
+                $ok = !empty($item['ok']);
+                $severity = (string) ($item['severity'] ?? 'info');
+                if ($ok) {
+                    $statusLabel = $translate('OK');
+                    $statusClass = 'success';
+                } elseif ($severity === 'error') {
+                    $statusLabel = $translate('Required');
+                    $statusClass = 'error';
+                } elseif ($severity === 'warning') {
+                    $statusLabel = $translate('Recommended');
+                    $statusClass = 'warning';
+                } else {
+                    $statusLabel = $translate('Note');
+                    $statusClass = '';
+                }
+                ?>
+                <tr>
+                    <td><span class="alert <?php echo $this->escapeHtmlAttr($statusClass); ?>"><?php echo $statusLabel; ?></span></td>
+                    <td>
+                        <strong><?php echo $this->escapeHtml($item['label'] ?? ''); ?></strong>
+                        <?php if (!empty($item['detail'])): ?>
+                        <br><span class="metadata"><?php echo $this->escapeHtml($item['detail']); ?></span>
+                        <?php endif; ?>
+                    </td>
+                    <td><?php echo $this->escapeHtml($item['action'] ?? ''); ?></td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+</details>
+<style>
+.ia-outbound-setup-checklist { margin: 1rem 0 1.5rem; border: 1px solid #d4d4d4; border-radius: 3px; background: #fafafa; }
+.ia-outbound-setup-checklist-summary { cursor: pointer; padding: 0.75rem 1rem; list-style: none; }
+.ia-outbound-setup-checklist-summary::-webkit-details-marker { display: none; }
+.ia-outbound-setup-checklist-body { padding: 0 1rem 1rem; border-top: 1px solid #e8e8e8; }
+</style>

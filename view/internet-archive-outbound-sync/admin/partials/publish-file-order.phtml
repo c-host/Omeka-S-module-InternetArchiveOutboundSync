@@ -1,0 +1,71 @@
+<?php
+$translate = $this->plugin('translate');
+$itemId = (int) ($this->itemId ?? 0);
+$files = $this->files ?? [];
+$fileMediaIds = $this->fileMediaIds ?? array_values(array_filter(
+    array_map('intval', array_column($files, 'media_id')),
+    static fn (int $mediaId): bool => $mediaId > 0
+));
+$reorderableFiles = array_values(array_filter(
+    $files,
+    static fn (array $file): bool => empty($file['synthetic'])
+));
+if ($files === []) {
+    return;
+}
+$hiddenValue = implode(',', array_map('intval', $fileMediaIds));
+?>
+<div class="ia-publish-file-order-block" data-item-id="<?php echo $itemId; ?>">
+    <p class="ia-publish-file-order-heading">
+        <strong><?php echo $translate('Files to upload'); ?>:</strong>
+        <?php if (!empty($this->fileSortMethodLabel)): ?>
+        <span class="ia-publish-file-order-method"><?php echo $this->escapeHtml($this->fileSortMethodLabel); ?></span>
+        <?php endif; ?>
+    </p>
+    <?php if (!empty($this->fileSortWarning)): ?>
+    <p class="ia-publish-file-order-warning"><?php echo $this->escapeHtml($this->fileSortWarning); ?></p>
+    <?php endif; ?>
+    <?php if (count($reorderableFiles) > 1): ?>
+    <p class="field-explanation ia-publish-file-order-help">
+        <?php echo $translate('Drag files to set Internet Archive upload order. The first file creates the IA item and receives metadata. Contributors can also number filenames (01-name, 02-name) so order is detected automatically.'); ?>
+    </p>
+    <?php endif; ?>
+    <ol
+        class="ia-publish-file-order-list"
+        data-item-id="<?php echo $itemId; ?>"
+        <?php echo count($reorderableFiles) > 1 ? '' : 'data-single-file="1"'; ?>
+    >
+        <?php foreach ($files as $index => $file): ?>
+        <?php
+            $isSynthetic = !empty($file['synthetic']);
+            $isReorderable = !$isSynthetic && count($reorderableFiles) > 1;
+            $primaryMediaId = (int) ($reorderableFiles[0]['media_id'] ?? 0);
+            $isPrimary = !$isSynthetic && (int) ($file['media_id'] ?? 0) === $primaryMediaId;
+        ?>
+        <li
+            class="ia-publish-file-order-item<?php echo $isSynthetic ? ' ia-publish-file-order-item-synthetic' : ''; ?>"
+            draggable="<?php echo $isReorderable ? 'true' : 'false'; ?>"
+            data-media-id="<?php echo (int) ($file['media_id'] ?? 0); ?>"
+        >
+            <span class="ia-publish-file-order-index" aria-hidden="true"><?php echo (int) $index + 1; ?></span>
+            <?php if ($isReorderable): ?>
+            <span class="ia-publish-file-order-handle" aria-hidden="true" title="<?php echo $this->escapeHtmlAttr($translate('Drag to reorder')); ?>">⋮⋮</span>
+            <?php endif; ?>
+            <span class="ia-publish-file-order-name"><?php echo $this->escapeHtml($file['filename'] ?? ''); ?></span>
+            <span class="ia-publish-file-order-size">(<?php echo (int) ($file['size'] ?? 0); ?> bytes)</span>
+            <?php if ($isPrimary): ?>
+            <span class="ia-publish-file-order-primary"><?php echo $translate('Primary'); ?></span>
+            <?php elseif ($isSynthetic): ?>
+            <span class="ia-publish-file-order-synthetic"><?php echo $translate('Default cover (module)'); ?></span>
+            <?php endif; ?>
+        </li>
+        <?php endforeach; ?>
+    </ol>
+    <input
+        type="hidden"
+        name="file_order[<?php echo $itemId; ?>]"
+        class="ia-publish-file-order-input"
+        data-item-id="<?php echo $itemId; ?>"
+        value="<?php echo $this->escapeHtmlAttr($hiddenValue); ?>"
+    >
+</div>
